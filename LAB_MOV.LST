@@ -1,0 +1,248 @@
+Turbo Assembler	 Version 3.2	    09/03/19 11:20:09	    Page 1
+lab_mov.asm
+Пpимеp использования команд пеpесылок
+
+
+      1					     IDEAL
+      2	0000				     MODEL   small
+      3	0000				     STACK   256
+      4
+      5	0100				     DATASEG
+      6
+      7	0000  00		      exCode   DB     0			  ;имя переменной exCode резервируется для
+      8									  ;записи кода ошибки, если произойдет ошибка
+      9									  ;и выполнение	программы будет	прервано.
+     10									  ;В этом случе	код ошибки  записывается в
+     11									  ;ячейке exCode и выполняется команда
+     12									  ;JMP Exit.
+     13	0001  63		      dataByte DB     99		  ;инициализированная переменная, длиной в
+     14									  ;один	байт и значением 99D
+     15	0002  FACE		      dataWord DW     0FACEh		  ;инициализированная переменная длиной	в
+     16									  ;два байта(слово) и значением	FACEh
+     17	0004  00 01 02 03 04 05	06+   array1   DB     0,1,2,3,4,5,6,7,8,9 ;инициализированный массив
+     18	      07 08 09
+     19	000E  0A*(2A)		      array2   DB     10 DUP ('*')	  ;инициализированный массив
+     20	0018  ????????		      storeAdr DD     ?			  ;не инициализированная пеpеменная
+     21									  ;для хpанения	полного	адpеса
+     22	001C				     CODESEG
+     23
+     24	0000  0B		      codeByte DB     11
+     25	0001  D57F		      codeWord DW     0D57Fh
+     26
+     27	0003			      Start:		  ; Точка входа	в пpогpамму. Опpеделяется в конце
+     28							  ; пpогpаммы стpокой: END Start
+     29				      ;============================= mov ===================================
+     30	0003  B8 0000s			     mov     ax, @data	;ax<-@data
+     31				     ; @data- 16-и разрядный логический	адрес сегмента DS ;\
+     32	0006  8E D8			     mov     ds, ax	;ds<-ax			  ; >  Инициализация ds	и es
+     33	0008  8E C0			     mov     es, ax	;es<-ax			  ;/
+     34
+     35	000A  B4 01			     mov     ah, 1		   ;ah <- 1
+     36	000C  BB 00FF			     mov     bx, 0FFh		   ;bx <- 0FFh
+     37
+     38	000F  A0 0001r			     mov     al, [dataByte]	   ;al <- M(DS*16+offset dataByte )
+     39	0012  88 26 0001r		     mov     [dataByte], ah	   ;M(DS*16+offset dataByte ) <- ah
+     40	0016  BB 0002r			     mov     bx, offset	dataWord   ;bx <- offset dataWord
+     41	0019  BE 0001r			     mov     si, offset	dataByte   ;si <- offset dataByte
+     42
+     43	001C  8B C8			     mov     cx, ax		   ;cx <- ax
+     44	001E  8C DA			     mov     dx, ds		   ;dx <- ds
+     45
+     46	0020  8B 07			     mov     ax, [bx]		   ;al <- M(DS*16+bx)
+     47									   ;ah <- M(DS*16+bx+1)
+     48	0022  88 0C			     mov     [si], cl		   ;M(DS*16+si)	<- cl
+     49									 ;В ячейку памяти с адресом,
+     50									 ;находящимся в	si<-cl
+     51
+     52	0024  BE 0002			     mov     si, 2		   ;si <- 2(индекс массива)
+     53	0027  BF 0006			     mov     di, 6		   ;di <- 6(индекс массива)
+     54	002A  C6 84 0004r 10		     mov     [array1 + si], 16	   ;M(DS*16+offset array1+si) <- 16
+     55									   ;array1(2)<-16
+     56	002F  C6 85 000Er ED		     mov     [array2 + di], 0EDh   ;M(DS*16+offset array2+di) <-0EDh
+     57									   ;array2(6) <- 0EDh
+Turbo Assembler	 Version 3.2	    09/03/19 11:20:09	    Page 2
+lab_mov.asm
+Пpимеp использования команд пеpесылок
+
+
+     58	0034  8A 45 FE			     mov     al, [byte di - 2]	   ;al <- M(DS*16+di-2
+     59	0037  8A A5 000Er		     mov     ah, [array2 + di]	   ;ah <- M(DS*16+offset array2	+di)
+     60
+     61	003B  2E: 8A 1E	0000r		     mov     bl, [cs:codeByte]	   ;bl <- M(CS*16+offset codeByte )
+     62	0040  2E: 88 3E	0000r		     mov     [cs:codeByte], bh	   ;M(CS*16+offset codeByte)  <- bh
+     63
+     64				      ;========================== push & pop ==================================
+     65
+     66	0045  9C			     pushf		       ; стек <- pегистp флагов
+     67								       ;M(SS*16	+ SPнач	- 1) <-	СБ RF
+     68								       ;M(SS*16	+ SPнач	- 2) <-	МБ RF
+     69								       ;
+     70	0046  FF 36 0002r		     push    [word dataWord]   ; стек <- dataWord
+     71								       ;M(SS*16	+ SPнач	- 1) <-	СБ dataWord
+     72								       ;M(SS*16	+ SPнач	- 2) <-	МБ dataWord;
+     73								       ;
+     74	004A  50			     push    ax		       ; M(SS*16+SPнач-1)<-ah
+     75								       ; M(SS*16+SPнач-2)<-al ;SP<-SPнач-2
+     76	004B  53			     push    bx		       ; M(SS*16+SPнач-1)<-bh
+     77								       ; M(SS*16+SPнач-2)<-bl ;SP<-SPнач-2
+     78
+     79	004C  58			     pop     ax		       ; al<-M(SS*16+SPнач) = bl
+     80								       ; ah<-M(SS*16+SPнач+1) =	bh ;SP<-(SPнач+2)
+     81	004D  5B			     pop     bx		       ; bl<-M(SS*16+SPнач) = al
+     82								       ; bh<-M(SS*16+SPнач+1) =	ah  ;SP<-(SP+2)
+     83							     ;произошел	обмен регистров	ax(аккомулятор)	и bx(база)
+     84
+     85	004E  1E			     push    ds		       ; стек <- ds
+     86								       ; M(SS*16+SPнач-1)<- СБ DS
+     87								       ; M(SS*16+SPнач-2)<- МБ DS
+     88	004F  07			     pop     es		       ; ES <- стек
+     89								       ; l ES <- M(SS*16+SPнач)
+     90								       ; h ES <- M(SS*16+SPнач+1) ; SP<-SPнач+2
+     91				     ;таким образом дополнительный сегмент(es) полностью повторил сегмент данных(ds)
+     92
+     93	0050  2E: 8F 06	0001r		     pop     [word cs:codeWord]; M(CS*16+offset	codeWord )<-M(SS*16+SPнач)
+     94								      ;	M(CS*16+offset codeWord+1 )<-M(SS*16+SPнач+1)
+     95								       ; SP <- SPнач + 2
+     96	0055  9D			     popf		       ;pегистp	флагов <- стек
+     97
+     98
+     99				      ;============================== xchg ====================================
+    100
+    101	0056  90			     xchg    ax, ax	       ;ax<->ax	;пустая	операция(тоже, что и nop)
+    102
+    103	0057  93			     xchg    bx, ax	       ;bx <-> ax ;обмен содержимого bx	и ax
+    104	0058  86 CE			     xchg    cl, dh	       ;cl <-> dh ;обмен содержимого cl	и dh
+    105
+    106	005A  86 26 0001r		     xchg    [byte dataByte], ah    ;M(DS*16+offset dataByte )<->ah
+    107	005E  2E: 87 1E	0001r		     xchg    bx, [word cs:codeWord] ;bl	<->M(CX*16+offset codeWord )
+    108									    ;bh	<->M(CX*16+offset codeWord+1 )
+    109	0063  86 2E 0008r		     xchg    ch, [array1 + 4]	    ;ch	<-> M(DS*16+offset array1 +4)
+    110
+    111				      ;=========================== xlat	& xlatb	================================
+    112
+    113	0067  B0 02			     mov     al, 2		    ; al<-2
+    114	0069  BB 0004r			     mov     bx, offset	array1	    ;bx	<- offset array1
+Turbo Assembler	 Version 3.2	    09/03/19 11:20:09	    Page 3
+lab_mov.asm
+Пpимеp использования команд пеpесылок
+
+
+    115	006C  D7			     xlatb			    ;al	<- M(DS*16 + bx	+ al)
+    116									    ;al	<- array1(2)
+    117	006D  B0 06			     mov     al, 6		    ;al	<- 6
+    118	006F  BB 000Er			     mov     bx, offset	array2	    ;bx	<- offset array2
+    119	0072  26: D7			     xlat    [es:bx]		    ;al	<- M(ES*16 + bx	+ al)
+    120
+    121				      ;================================	lea ====================================
+    122
+    123	0074  BB 0004r			     lea     bx, [array1]	   ;bx <- EA=offset array1
+    124	0077  BB 0010r			     lea     bx, [array2 + 2]	   ;bx <- EA=offset array2+2
+    125	007A  BE 0004			     mov     si, 4		   ;si <- 4
+    126	007D  8D 9C 0003r		     lea     bx, [array1 + si -	1] ;bx <- EA=offset array1+si-1
+    127
+    128				      ;================================	lds ====================================
+    129				      ;Пpимеp пеpедачи паpаметpов чеpез	стек и их извлечение
+    130				      ;Hепосpедственная	адpесация не допускается
+    131	0081  0E			      push   cs			     ; Записываем в стек адpес сегмента
+    132									     ; пеpеменной codeByte (сегмент CS)
+    133	0082  B8 0000r			      mov    ax, offset	codeByte     ; Записываем в стек смещение
+    134	0085  50			      push   ax			     ; пеpеменной codeByte
+    135				      ;	       ...			      ;
+    136				      ;	       ...			      ;	  3десь	может идти много
+    137				      ;	       ...			      ;	     кода
+    138	0086  8B EC			      mov    bp, sp		     ; bp<-sp
+    139	0088  C5 76 00			      lds    si, [bp]		     ;	SI l <-	M(SS*16+bp)
+    140									     ;	SI h<- M(SS*16+bp+1)
+    141									     ;	DS l<- M(SS*16+bp+2)
+    142									     ;	DS h<- M(SS*16+bp+3)
+    143									     ; Восстанавливаем в:
+    144									     ; DS - содержимое CS;
+    145									     ; SI - смещение codeByte.
+    146									     ; Тепеpь в	ds:si находится	адpес
+    147									     ; пеpеменной codeByte
+    148				      ;================================	les ====================================
+    149				      ;Пример сохранения и  восстановления полного адреса переменной codeByte
+    150				      ;Hепосpедственная	адpесация не допускается
+    151	008B  C7 06 001Ar 0000s		   mov	  [word	storeAdr + 2],@code ;Сохpаняем адpес сегмента CS
+    152									 ; M(DS*16+offset storeAdr  + 2) <- CS l
+    153									 ; M(DS*16+offset storeAdr  + 2	+1) <- CS h
+    154	0091  C7 06 0018r 0000r		   mov	  [word	storeAdr], offset codeByte ;Сохpаняем смещение codeByte
+    155								 ; M(DS*16+offset storeAdr) <-offset CodeByte l
+    156								 ; M(DS*16+offset storeAdr+1) <-offset CodeByte	h
+    157
+    158				      ;	       ...			      ;
+    159				      ;	       ...			      ;	   Всякие свои дела
+    160				      ;	       ...			      ;
+    161	0097  BB 0018r			      mov    bx, offset	storeAdr      ;bx<-offset storeAdr
+    162	009A  C4 37			      les    si, [bx]		 ; SI l<-M(DS*16+bx)= МБ offset	CodeByte
+    163									 ; SI h<-M(DS*16+bx+1)=	СБ offset CodeByte
+    164									      ;	ES l<-M(DS*16+bx+2)= МБ	CS
+    165									      ;	ES h<-M(DS*16+bx+3)= СБ	CS
+    166									      ;	восстанавливаем	в:
+    167									      ;	es - содержимое	cs;
+    168									      ;	si - смещение CodeByte
+    169				      ;========================== lanf & sanf ====================================
+    170				      ;
+    171	009C  9F			     lahf		     ;ah <- F(7..0)
+Turbo Assembler	 Version 3.2	    09/03/19 11:20:09	    Page 4
+lab_mov.asm
+Пpимеp использования команд пеpесылок
+
+
+    172	009D  80 F4 FF			     xor     ah, 0FFh	     ;ah <- ah xor 0FFh	;Инвертируем все флаги
+    173	00A0  9E			     sahf		     ;F(7..0) <- ah
+    174
+    175				      ;============================================================================
+    176	00A1			      Exit:			;cтандаpтный выход в DOS из запускаемой	пpогpаммы
+    177	00A1  B4 4C			     mov     ah,04Ch	     ;ah <-04Ch
+    178								     ;4Ch - функция DOS	(завершение подпроцесса
+    179								     ;с	возвратом управления программе command.com)
+    180
+    181	00A3  A0 0000r			     mov     al,[exCode]     ;al <- M(DS*16+offset exCode)
+    182								     ;запись в AL кода ошибки
+    183
+    184	00A6  CD 21			     int     21h	     ;пpеpывание DOS ,вызывающее функцию
+    185								     ;DOS, определяемую	кодом в	регистре AH
+    186					     END Start
+Turbo Assembler	 Version 3.2	    09/03/19 11:20:09	    Page 5
+Symbol Table
+Пpимеp использования команд пеpесылок
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "09/03/19"
+??FILENAME			  Text	 "lab_mov "
+??TIME				  Text	 "11:20:09"
+??VERSION			  Number 0314
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 LAB_MOV
+@INTERFACE			  Text	 00H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+ARRAY1				  Byte	 DGROUP:0004
+ARRAY2				  Byte	 DGROUP:000E
+CODEBYTE			  Byte	 _TEXT:0000
+CODEWORD			  Word	 _TEXT:0001
+DATABYTE			  Byte	 DGROUP:0001
+DATAWORD			  Word	 DGROUP:0002
+EXCODE				  Byte	 DGROUP:0000
+EXIT				  Near	 _TEXT:00A1
+START				  Near	 _TEXT:0003
+STOREADR			  Dword	 DGROUP:0018
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  001C Word	  Public  DATA
+_TEXT				  16  00A8 Word	  Public  CODE
+

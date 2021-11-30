@@ -1,0 +1,114 @@
+Turbo Assembler	 Version 3.2	    05/03/21 17:01:39	    Page 1
+src\vmem.asm
+
+
+
+      1				     IDEAL   ; Директива - тип Асемблера tasm
+      2	0000			     MODEL small ; Директива -	тип моделі пам'яті
+      3	0000			     STACK 256	 ; Директива -	розмір стеку	в байтах
+      4				     MACRO M_Init ; Початок макросу
+      5				     mov ax,@data ; ax <- @data
+      6				     mov ds,ax ; ds <- ax
+      7				     mov es,ax ; es <- ax
+      8				     ENDM M_Init ; Кінець	макросу
+      9
+     10	0100			     DATASEG
+     11	0000  00		     exCode db 0
+     12	0001  48 21 65 12 6C 12	6C+  rect_line db 'H', 021h, 'e', 012h,	'l', 012h, 'l',	012h, 'o', 012h
+     13	      12 6F 12
+     14	000B  20 12 77 12 6F 12	72+  db	' ', 012h, 'w',	012h, 'o', 012h, 'r', 012h, 'l', 012h, 'd', 012h, '!', 012h ; рядок    +
+     15	      12 6C 12 64 12 21	12   символів для виводу на екран, парні байти - символи,  +
+     16				     непарні - атрибути,	у нашому	випадку - колір фона	    +
+     17				     символа синій,	а колір самого символу зелений
+     18	0019  08*(00 12)	     db	8 dup ("", 00h,	012h) ;	директива 8 dup створює	8 символів з	    +
+     19				     кодом	00h і синім кольором, це є частиною фону		    +
+     20				     прямокутника
+     21
+     22	0029			     CODESEG
+     23	0000			     Start:
+     24				     M_Init
+1    25	0000  B8 0000s		     mov ax,@data ; ax <- @data
+1    26	0003  8E D8		     mov ds,ax ; ds <- ax
+1    27	0005  8E C0		     mov es,ax ; es <- ax
+     28	0007  B8 B800		     mov ax, 0B800h ; завантажуємо у 16-бітний регістр AX		    +
+     29				     сегментну	адресу текстової	відеопам`яті
+     30	000A  8E C0		     mov es, ax	; завантажуємо дані з регістру	AX у регістр ES	    +
+     31				     (завантаження даних напряму у сегментний регістр	    +
+     32				     заборонена)
+     33	000C  BB 0000		     mov bx, 0 ; у регістр BX записуємо параметр 0 (регістр BX	    +
+     34				     виступає у якості лічильника)
+     35	000F  BA 0144		     mov dx, 324 ; у регістр DX	записуємо 324 (зміщення у сегменті)
+     36	0012  8B FA		     mov di, dx	; у регістр DI записуємо дані з регістру DX (DI -	    +
+     37				     регістр призначення у команді movsb), таким	чином	    +
+     38				     фізична адреса комірки, в яку потрібно записати	    +
+     39				     певний байт - ES:DI
+     40
+     41	0014			     @loop:
+     42	0014  B9 0028		     mov cx, 40	; записуємо параметр 40 у регістр CX для виводу   +
+     43				     рядка	(детальніший	опис наведений у описі до рис. 5)
+     44	0017  BE 0001r		     mov si, offset rect_line ;	пересилаємо адресу рядка rect_line у	    +
+     45				     сегментний регістр SI
+     46	001A  F3> A4		     rep movsb ; записуємо у комірку з адресою	ES:DI байт з	    +
+     47				     комірки з адресою DS:SI, флаг DF рівний нулю,	тому	    +
+     48				     операція пересилає дані зліва направо, збільшуючи   +
+     49				     значення у регістрах SI та DI на значення, яке вказане +
+     50				     у	регістрі CX
+     51	001C  83 C7 78		     add di, 120 ; зміщення для наступної лінії
+     52	001F  43		     inc bx ; збільшуємо значення у регістрі	BX на	1
+     53	0020  83 FB 0A		     cmp bx, 10	; порівнюємо значення	в регістрі BX з 10
+     54	0023  75 EF		     jne @loop ; якщо значенні не	рівні, то значення флагу ZF	    +
+     55				     дорівнює нулю і програма продовжить	виконання від   +
+     56				     мітки	@loop
+     57	0025			     Exit:
+Turbo Assembler	 Version 3.2	    05/03/21 17:01:39	    Page 2
+src\vmem.asm
+
+
+
+     58	0025  B4 4C		     mov ah, 04Ch ; 4ch	- функція виходу з програми для		    +
+     59				     переривання 21h
+     60	0027  A0 0000r		     mov al, [exCode] ;	Вхідний параметр	для функції 4ch - вихідний+
+     61				     статус програми int 21h
+     62	002A  CD 21		     int 21h
+     63				     END Start
+Turbo Assembler	 Version 3.2	    05/03/21 17:01:39	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name		Type   Value			   Cref	(defined at #)
+
+??DATE			Text   "05/03/21"
+??FILENAME		Text   "vmem	"
+??TIME			Text   "17:01:38"
+??VERSION		Number 0314
+@32BIT			Text   0			   #2
+@CODE			Text   _TEXT			   #2  #2  #22
+@CODESIZE		Text   0			   #2
+@CPU			Text   0101H
+@CURSEG			Text   _TEXT			   #3  #10  #22
+@DATA			Text   DGROUP			   #2  25
+@DATASIZE		Text   0			   #2
+@FILENAME		Text   VMEM
+@INTERFACE		Text   00H			   #2
+@LOOP			Near   _TEXT:0014		   #41	54
+@MODEL			Text   2			   #2
+@STACK			Text   DGROUP			   #2
+@WORDSIZE		Text   2			   #3  #10  #22
+EXCODE			Byte   DGROUP:0000		   #11	60
+EXIT			Near   _TEXT:0025		   #57
+RECT_LINE		Byte   DGROUP:0001		   #12	44
+START			Near   _TEXT:0000		   #23	63
+
+Macro Name						   Cref	(defined at #)
+
+M_INIT							   #4  24
+
+Groups & Segments	Bit Size Align	Combine	Class	   Cref	(defined at #)
+
+DGROUP			Group				   #2  2  25
+  STACK			16  0100 Para	Stack	STACK	   #3
+  _DATA			16  0029 Word	Public	DATA	   #2  #10
+_TEXT			16  002C Word	Public	CODE	   #2  2  #22  22
+
