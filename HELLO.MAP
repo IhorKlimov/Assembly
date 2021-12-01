@@ -1,2 +1,9 @@
-Fatal: Unable to open file 'src\hello.obj'
+
+ Start  Stop   Length Name               Class
+
+ 00000H 00018H 00019H _TEXT              CODE
+ 00020H 000DFH 000C0H _DATA              DATA
+ 000E0H 001DFH 00100H STACK              STACK
+
+Program entry point at 0000:0000
 
