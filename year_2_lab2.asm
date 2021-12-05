@@ -12,6 +12,7 @@ mybyte db " $"
 onedigit db "You've entered a one-digit number", 10, 13, "$"
 twodigit db "You've entered a two-digit number", 10, 13, "$"
 result db 6
+isnegativeinput db 0
 
 
 CODESEG
@@ -57,6 +58,26 @@ mov bx, 0
 
 @converttwodigitbytestoone:
 mov ax, 0
+
+cmp msg, 45
+je @handlenegative
+jne @nextone
+
+@nextone:
+cmp msg, 43
+je @handlepositive
+jne @continueconverttwodigitbytestoone
+
+@handlenegative:
+mov msg, 48
+mov isnegativeinput, 1
+jmp @continueconverttwodigitbytestoone
+
+@handlepositive:
+mov msg, 48
+jmp @continueconverttwodigitbytestoone
+
+@continueconverttwodigitbytestoone:
 mov al, msg
 sub al, 48
 mov bl, 10
@@ -64,6 +85,15 @@ mul bl
 mov dl, msg + 1
 sub dl, 48
 add al, dl
+
+cmp isnegativeinput, 1
+je @converttonegative
+jne @subtraction
+
+@converttonegative:
+mov bl, al
+sub al, bl
+sub al, bl
 
 @subtraction:
 sub al, 32
