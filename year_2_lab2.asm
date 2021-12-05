@@ -11,6 +11,7 @@ counter db 0
 mybyte db " $"
 onedigit db "You've entered a one-digit number", 10, 13, "$"
 twodigit db "You've entered a two-digit number", 10, 13, "$"
+result db 6
 
 
 CODESEG
@@ -66,9 +67,25 @@ add al, dl
 
 @subtraction:
 sub al, 32
+mov result, al
 
 @showtwodigits:
 mov counter, 1
+cmp result, 0
+jl @printminus
+jge @showtwodigitscontinue
+
+@printminus:
+mov mybyte, 45
+lea dx, mybyte
+mov ah, 09
+int 21h
+mov ax, 0
+mov al, result
+neg al
+
+
+@showtwodigitscontinue:
 mov bl, 10
 div bl
 add al, 48
@@ -82,6 +99,8 @@ jmp @print
 mov mybyte, ch
 inc counter
 jmp @print
+
+
 
 @print:
 lea dx, mybyte
