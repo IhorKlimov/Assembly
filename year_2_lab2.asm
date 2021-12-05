@@ -47,7 +47,7 @@ mov ah, 09h
 int 21h
 mov ax, bx
 mov bx, 0
-jmp @showtwodigits
+jmp @subtraction
 
 @printtwodigitmessage:
 mov dx, offset twodigit
@@ -66,6 +66,7 @@ mov dl, msg + 1
 sub dl, 48
 add al, dl
 
+@subtraction:
 sub al, 32
 
 @showtwodigits:
