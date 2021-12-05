@@ -33,8 +33,6 @@ mov ax, 0
 mov al, msg
 sub al, 48 ; subtract 32 from the number
 
-;sub ax, 4 ; subtraction
-
 mov bx, ax
 
 cmp len, 1
