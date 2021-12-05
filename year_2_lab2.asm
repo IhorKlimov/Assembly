@@ -3,8 +3,6 @@ MODEL small ; Директива - тип моделі пам’яті
 STACK 256 ; Директива - розмір стеку
 
 DATASEG
-number db -1
-result db 0, "$"
 exCode db 0
 maxlen db 3
 len db 0
@@ -34,8 +32,6 @@ mov ax, 0
 mov al, msg
 sub al, 48 ; subtract 32 from the number
 
-mov result, al ; save result to memory
-
 sub ax, 4
 
 @showtwodigits:
@@ -63,7 +59,8 @@ je @exit
 jl @seconddigit
 
 @exit:
-mov ah, 4ch
+mov ah,4ch
+mov al,[exCode]
 int 21h
 
 end Start
