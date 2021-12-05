@@ -9,8 +9,6 @@ len db 0
 msg db 3 dup(?)
 counter db 0
 mybyte db " $"
-onedigit db "You've entered a one-digit number", 10, 13, "$"
-twodigit db "You've entered a two-digit number", 10, 13, "$"
 result db 6
 isnegativeinput db 0
 
@@ -42,17 +40,11 @@ je @printonedigitmessage
 jg @printtwodigitmessage
 
 @printonedigitmessage:
-mov dx, offset onedigit
-mov ah, 09h
-int 21h
 mov ax, bx
 mov bx, 0
 jmp @subtraction
 
 @printtwodigitmessage:
-mov dx, offset twodigit
-mov ah, 09h
-int 21h
 mov ax, bx
 mov bx, 0
 
