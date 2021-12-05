@@ -9,7 +9,8 @@ len db 0
 msg db 3 dup(?)
 counter db 0
 mybyte db " $"
-
+onedigit db "You've entered a one-digit number", 10, 13, "$"
+twodigit db "You've entered a two-digit number", 10, 13, "$"
 
 
 CODESEG
@@ -32,7 +33,40 @@ mov ax, 0
 mov al, msg
 sub al, 48 ; subtract 32 from the number
 
-sub ax, 4
+;sub ax, 4 ; subtraction
+
+mov bx, ax
+
+cmp len, 1
+je @printonedigitmessage
+jg @printtwodigitmessage
+
+@printonedigitmessage:
+mov dx, offset onedigit
+mov ah, 09h
+int 21h
+mov ax, bx
+mov bx, 0
+jmp @showtwodigits
+
+@printtwodigitmessage:
+mov dx, offset twodigit
+mov ah, 09h
+int 21h
+mov ax, bx
+mov bx, 0
+
+@converttwodigitbytestoone:
+mov ax, 0
+mov al, msg
+sub al, 48
+mov bl, 10
+mul bl
+mov dl, msg + 1
+sub dl, 48
+add al, dl
+
+sub al, 32
 
 @showtwodigits:
 mov counter, 1
