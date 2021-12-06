@@ -14,6 +14,7 @@ x dw 4
 y dw 1
 z dw 0
 zr dw 0
+divider dw 0
 
 case_one db "Case one", 10, 13, "$"
 case_two db "Case two", 10, 13, "$"
@@ -62,6 +63,7 @@ je @case_four
     mov bx, ax ; save x * y
     mov ax, x
     add ax, y ; x + y
+    mov [divider], bx
     div bx ; divide by (x * y)
     mov z, ax ; save result
     mov zr, dx
@@ -148,14 +150,32 @@ je @case_four
     jne @print_floating_point
 
 @print_floating_point:
-    ;mov mybyte, 46
-    ;lea dx, mybyte
-    ;mov ah, 09
-    ;int 21h
-    ;mov ax, zr
-    ;mov z, ax
-    ;mov zr, 0
-    ;jmp @post_calculation
+    mov mybyte, 46
+    lea dx, mybyte
+    mov ah, 09
+    int 21h
+
+    mov dx, zr
+    mov cx, 10 ; print 10 digits after a floating point max
+
+    @floating:
+        mov ax, dx
+        mov bx, 10
+        mul bx
+        mov bx, [divider]
+        mov dx, 0
+        div bx
+        add ax, 48
+        push dx
+        mov mybyte, al
+        lea dx, mybyte
+        mov ah, 09
+        int 21h
+        pop dx
+        cmp dx, 0
+        je @exit
+        loop @floating
+
     jmp @exit
 
 @exit:
