@@ -64,6 +64,7 @@ je @case_four
     add ax, y ; x + y
     div bx ; divide by (x * y)
     mov z, ax ; save result
+    mov zr, dx
     jmp @post_calculation
 
 
@@ -109,7 +110,7 @@ je @case_four
     lea dx, mybyte
     mov ah, 09
     int 21h
-    jmp @exit
+    jmp @check_floating_point
 
 @print_minus:
     mov mybyte, 45
@@ -132,14 +133,30 @@ je @case_four
     jmp @pre_print
 
 @print:
-    cmp cx,0
-    je @exit
+    cmp cx, 0
+    je @check_floating_point
     pop dx
     add dx,48
     mov ah,02h
     int 21h
     dec cx
     jmp @print
+
+@check_floating_point:
+    cmp zr, 0
+    je @exit
+    jne @print_floating_point
+
+@print_floating_point:
+    ;mov mybyte, 46
+    ;lea dx, mybyte
+    ;mov ah, 09
+    ;int 21h
+    ;mov ax, zr
+    ;mov z, ax
+    ;mov zr, 0
+    ;jmp @post_calculation
+    jmp @exit
 
 @exit:
     mov ah,4ch
