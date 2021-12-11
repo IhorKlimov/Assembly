@@ -10,8 +10,8 @@ msg db 3 dup(?)
 mybyte db " $"
 result dw 6
 isnegativeinput db 0
-x dw 4
-y dw 1
+x dw 106
+y dw 22
 z dw 0
 zr dw 0
 divider dw 0
