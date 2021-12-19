@@ -1,8 +1,30 @@
-IDEAL ; Директива - тип Асемблера tasm
-MODEL small ; Директива - тип моделі пам’яті
-STACK 256 ; Директива - розмір стеку
+init_ds macro
+    ;--------------------------------- 1. Ініціалізація DS и ES---------------------------------------
+    mov ax,data; data ідентифікатор, що створюються директивою model
+    mov ds, ax ; Завантаження початку сегменту даних в регістр ds
+    mov es, ax ; Завантаження початку сегменту даних в регістр es
+endm
 
-DATASEG
+ask_for_number macro
+    mov ah, 0ah
+    mov dx, offset maxlen
+    int 21h ; ввод з клавіатури
+    next_line
+endm
+
+next_line macro
+    mov dl, 10
+    mov ah, 02h
+    int 21h ; наступна строка
+endm
+
+print macro text
+    lea dx, text
+    mov ah, 09h
+    int 21h
+endm
+
+DATA SEGMENT PARA PUBLIC "DATA"
 exCode db 0
 maxlen db 3
 len db 0
@@ -11,23 +33,18 @@ counter db 0
 mybyte db " $"
 result db 6
 isnegativeinput db 0
+DATA ENDS
 
+STK SEGMENT STACK
+DB 256 DUP ("?")
+STK ENDS
 
-CODESEG
-Start:
-;--------------------------------- 1. Ініціалізація DS и ES---------------------------------------
-mov ax,@data; @data ідентифікатор, що створюються директивою model
-mov ds, ax ; Завантаження початку сегменту даних в регістр ds
-mov es, ax ; Завантаження початку сегменту даних в регістр es
-;----------------------------------2. Операція виводу на консоль---------------------------------
+CODE SEGMENT PARA PUBLIC "CODE"
+ASSUME CS : CODE, DS : DATA, SS : STK
 
-mov ah, 0ah
-mov dx, offset maxlen
-int 21h ; ввод з клавіатури
-
-mov dl, 10
-mov ah, 02h
-int 21h ; наступна строка
+MAIN PROC
+init_ds
+ask_for_number
 
 mov ax, 0
 mov al, msg
@@ -99,9 +116,7 @@ jge @showtwodigitscontinue
 
 @printminus:
 mov mybyte, 45
-lea dx, mybyte
-mov ah, 09
-int 21h
+print mybyte
 mov ax, 0
 mov al, result
 neg al
@@ -122,11 +137,8 @@ mov mybyte, ch
 inc counter
 jmp @print
 
-
 @print:
-lea dx, mybyte
-mov ah, 09
-int 21h
+print mybyte
 cmp counter, 2
 je @exit
 jl @seconddigit
@@ -136,4 +148,6 @@ mov ah,4ch
 mov al,[exCode]
 int 21h
 
-end Start
+MAIN ENDP
+CODE ENDS
+END MAIN

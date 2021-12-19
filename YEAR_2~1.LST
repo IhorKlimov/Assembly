@@ -1,5 +1,5 @@
-Turbo Assembler	 Version 3.2	    12/01/21 21:48:17	    Page 1
-YEAR_2~1.asm
+Turbo Assembler	 Version 3.2	    12/16/21 18:30:19	    Page 1
+YEAR_2~1.ASM
 
 
 
@@ -38,7 +38,7 @@ YEAR_2~1.asm
      33	0037			     MAIN ENDP
      34	0037			     CSEG ENDS
      35				     END MAIN
-Turbo Assembler	 Version 3.2	    12/01/21 21:48:17	    Page 2
+Turbo Assembler	 Version 3.2	    12/16/21 18:30:19	    Page 2
 Symbol Table
 
 
@@ -46,9 +46,9 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "12/01/21"
+??DATE				  Text	 "12/16/21"
 ??FILENAME			  Text	 "YEAR_2~1"
-??TIME				  Text	 "21:48:16"
+??TIME				  Text	 "18:30:19"
 ??VERSION			  Number 0314
 @CPU				  Text	 0101H
 @CURSEG				  Text	 CSEG
