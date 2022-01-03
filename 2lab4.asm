@@ -7,8 +7,8 @@ exCode db 0
 mybyte db " $"
 result dw 0
 print_n db 0
-buff db 6, 7 dup(?)
-array dw 6 dup(0)
+buff db 12, 7 dup(?)
+array dw 12 dup(0)
 error db "Incorrect number", 10, 13, "$"
 number_to_find dw 0
 number_found dw 0
@@ -34,7 +34,7 @@ mov es, ax ; Завантаження початку сегменту даних
 
 ;---------------------------------- Number input from keyboard ----------------------------------
 
-mov cx, 6
+mov cx, 12
 
 @ask_for_number:
     push si
@@ -95,7 +95,7 @@ endin1:
 
     ; Write a number to array
     push bx
-    mov bx, 6
+    mov bx, 12
     sub bx, cx
     sal bx, 1
     mov array + bx, ax
@@ -109,12 +109,12 @@ endin1:
     mov dx, offset msg_got_numbers
     int 21h
 
-    mov cx, 6
+    mov cx, 12
 @number_print:
         push cx
         ; Read a number to array
         push bx
-        mov bx, 6
+        mov bx, 12
         sub bx, cx
         sal bx, 1
         mov ax, array + bx
@@ -183,12 +183,12 @@ endin1:
     mov dx, offset msg_sum_of_numbers
     int 21h
 
-    mov cx, 6
+    mov cx, 12
     mov ax, 0
 @calculate_sum:
      ; Read a number to array
      push bx
-     mov bx, 6
+     mov bx, 12
      sub bx, cx
      sal bx, 1
      mov dx, array + bx
@@ -261,12 +261,12 @@ mov dx, 0
     mov dx, offset msg_largest_number
     int 21h
 
-    mov cx, 6
+    mov cx, 12
     mov ax, 0
 @calculate_max:
      ; Read a number to array
      push bx
-     mov bx, 6
+     mov bx, 12
      sub bx, cx
      sal bx, 1
      mov dx, array + bx
@@ -343,22 +343,22 @@ mov dx, 0
     mov dx, offset msg_sorted_array
     int 21h
 
-    mov cx, 6
+    mov cx, 12
     mov ax, 0
 @sort:
      ; Read a number to array
      push bx
-     mov bx, 6
+     mov bx, 12
      sub bx, cx ; current index
      sal bx, 1  ; adjust index to word size
      mov dx, array + bx ; read a current value
 
      push cx
-     mov cx, 6
+     mov cx, 12
      @sort_nested:
         cmp cx, 1
         jle @sort_nested_end
-        mov bx, 6
+        mov bx, 12
         sub bx, cx ; current index
         sal bx, 1  ; adjust index to word size
         mov dx, array + bx ; read a current value
@@ -378,12 +378,12 @@ mov dx, 0
     loop @sort
 
 @print_array_3:
-    mov cx, 6
+    mov cx, 12
 @number_print_3:
         push cx
         ; Read a number to array
         push bx
-        mov bx, 6
+        mov bx, 12
         sub bx, cx
         sal bx, 1
         mov ax, array + bx
@@ -584,11 +584,11 @@ mov dx, 0
 
 
 
-mov cx, 6
+mov cx, 12
 mov ax, 0
 @found_coordinates:
      ; Read a number to array
-     mov bx, 6
+     mov bx, 12
      sub bx, cx
      sal bx, 1
      mov dx, array + bx
@@ -602,7 +602,7 @@ mov ax, 0
      mov dx, 0
      sar bx, 1 ; bring back index to a regular look
      mov ax, bx
-     mov bl, 3 ; row length
+     mov bl, 6 ; row length
      div bx
 
      add ax, 48
@@ -625,6 +625,10 @@ mov ax, 0
      lea dx, mybyte
      mov ah, 09
      int 21h
+     mov dl, 10
+     mov ah, 02h
+     int 21h ; наступна строка
+
 
      @found_coordinates_4:
 
