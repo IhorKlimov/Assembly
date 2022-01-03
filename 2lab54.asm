@@ -140,8 +140,8 @@ exCode db 0
 mybyte db " $"
 result dw 0
 print_n db 0
-buff db 6, 7 dup(?)
-array dw 6 dup(0)
+buff db 12, 7 dup(?)
+array dw 12 dup(0)
 error db "Incorrect number", 10, 13, "$"
 number_to_find dw 0
 number_found dw 0
@@ -169,10 +169,10 @@ ASSUME CS : CODE, DS : DATA, SS : STK
 MAIN PROC
 init_ds
 print array_initialization_message
-mov cx, 6
+mov cx, 12
 
 @array_initialization:
-    mov ax, 7
+    mov ax, 13
     sub ax, cx
     add ax, 48
     print_number_input_prompt al
@@ -181,7 +181,7 @@ mov cx, 6
     pop cx
 
     ; Write a number to array
-    mov bx, 6
+    mov bx, 12
     sub bx, cx
     sal bx, 1
     mov array + bx, ax
@@ -190,13 +190,13 @@ mov cx, 6
 
 @print_array:
     print msg_got_numbers
-    mov cx, 6
+    mov cx, 12
 
 @number_print:
     push cx
     ; Read a number to array
     push bx
-    mov bx, 6
+    mov bx, 12
     sub bx, cx
     sal bx, 1
     mov ax, array + bx
@@ -211,13 +211,13 @@ mov cx, 6
 ; --------------------------------- TASK 1 ------------------------------
 @task_one:
     print msg_sum_of_numbers
-    mov cx, 6
+    mov cx, 12
     mov ax, 0
 
 @calculate_sum:
      ; Read a number to array
      push bx
-     mov bx, 6
+     mov bx, 12
      sub bx, cx
      sal bx, 1
      mov dx, array + bx
