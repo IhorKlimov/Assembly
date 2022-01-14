@@ -4,14 +4,10 @@ STACK 256 ; Директива - розмір стеку
 
 DATASEG
 exCode db 0
-maxlen db 3
-len db 0
-msg db 3 dup(?)
-counter db 0
 mybyte db " $"
-result db 6
-isnegativeinput db 0
-
+input db 7, 8 dup(?)
+error db "Incorrect number", 10, 13, "$"
+error_overflow db "Number overflow", 10, 13, "$"
 
 CODESEG
 Start:
@@ -20,120 +16,128 @@ mov ax,@data; @data ідентифікатор, що створюються ди
 mov ds, ax ; Завантаження початку сегменту даних в регістр ds
 mov es, ax ; Завантаження початку сегменту даних в регістр es
 ;----------------------------------2. Операція виводу на консоль---------------------------------
+push si
+mov ah,0ah
+xor di,di
+mov dx, offset input ; аддрес буфера
+int 21h ; принимаем строку
+mov dl,0ah
+mov ah,02
+int 21h ; виводимо переклад рядка
 
-mov ah, 0ah
-mov dx, offset maxlen
-int 21h ; ввод з клавіатури
+; обробити вміст буфера
 
-mov dl, 10
-mov ah, 02h
-int 21h ; наступна строка
+mov si,offset input+2 ; берем аддрес начала строки
+mov al, input+2;
+cmp al, 2Dh ; якщо перший символ мінус
+jnz step_1
+mov di,1  ; ми встановлюємо прапор
+inc si    ; і пропустити його
 
-mov ax, 0
-mov al, msg
-sub al, 48
+step_1:
+    xor ax,ax
+    mov bx, 10  ; фундація sc
 
-mov bx, ax
+step_2:
+    mov cl,[si] ; прочитав символ з буфера
+    cmp cl,0dh  ; перевіряємо чи він останній
+    jz end_negative
 
-cmp len, 1
-je @printonedigitmessage
-jg @printtwodigitmessage
+    ; якщо символ не останній, перевіряємо його на правильність
+    cmp cl,'0'  ; якщо введено неправильний символ <0
+    jb print_error
+    cmp cl,'9'  ; якщо введено неправильний символ> 9
+    ja print_error
 
-@printonedigitmessage:
-mov ax, bx
+    sub cl, '0' ; ми працюємо з числа символів
+    imul bx     ; множимо на 10
+    jo print_overflow
+    add ax, cx  ; додати до решти
+    jo print_overflow
+    inc si     ; покажчик на наступний символ
+    jmp step_2  ; повторюємо
+
+print_error:
+    lea dx, error
+    mov ah, 09h
+    int 21h
+    jmp @exit
+
+print_overflow:
+    lea dx, error_overflow
+    mov ah, 09h
+    int 21h
+    jmp @exit
+
+end_negative:
+    cmp di,1 ; якщо прапор встановлений, то
+    jnz end_ask_for_number
+    neg ax   ; робимо число від’ємним
+
+end_ask_for_number:
+    pop si
+    ; всі символи з буфера обробляються числом в ax
+
 mov bx, 0
-jmp @subtraction
+mov cx, 0
+mov dx, 0
 
-@printtwodigitmessage:
-mov ax, bx
-mov bx, 0
-
-@converttwodigitbytestoone:
-mov ax, 0
-
-cmp msg, 45
-je @handlenegative
-jne @nextone
-
-@nextone:
-cmp msg, 43
-je @handlepositive
-jne @continueconverttwodigitbytestoone
-
-@handlenegative:
-mov msg, 48
-mov isnegativeinput, 1
-jmp @continueconverttwodigitbytestoone
-
-@handlepositive:
-mov msg, 48
-jmp @continueconverttwodigitbytestoone
-
-@continueconverttwodigitbytestoone:
-mov al, msg
-sub al, 48
-mov bl, 10
-mul bl
-mov dl, msg + 1
-sub dl, 48
-add al, dl
-
-cmp isnegativeinput, 1
-je @converttonegative
-jne @subtraction
-
-@converttonegative:
-mov bl, al
-sub al, bl
-sub al, bl
-
-@subtraction:
-sub al, 32
-mov result, al
-
-@showtwodigits:
-mov counter, 1
-cmp result, 0
-jl @printminus
-jge @showtwodigitscontinue
-
-@printminus:
-mov mybyte, 45
-lea dx, mybyte
-mov ah, 09
-int 21h
-mov ax, 0
-mov al, result
-neg al
-
-
-@showtwodigitscontinue:
-mov bl, 10
-div bl
-add al, 48
-add ah, 48
-mov cl, al  ; whole
-mov ch, ah  ; remainder
-mov mybyte, cl
-jmp @print
-
-@seconddigit:
-mov mybyte, ch
-inc counter
-jmp @print
-
+sub ax, 32
+jo print_overflow
 
 @print:
-lea dx, mybyte
-mov ah, 09
-int 21h
-cmp counter, 2
-je @exit
-jl @seconddigit
+    cmp ax, 0
+    jl print_minus
+    je print_zero
+    jge pre_print
+
+    print_zero: ; вивести 0
+        mov mybyte, '0'
+        lea dx, mybyte
+        mov ah, 09h
+        int 21h
+        jmp number_print_end
+
+    print_minus: ; вывести -
+        push ax
+        mov mybyte, '-'
+        lea dx, mybyte
+        mov ah, 09h
+        int 21h
+        pop ax
+        neg ax
+        mov cx,0
+        mov dx,0
+
+    pre_print:
+        cmp ax, 0
+        je print_post
+        mov bx, 10
+        div bx
+        push dx
+        inc cx
+        xor dx, dx
+        jmp pre_print
+
+    print_post:
+        cmp cx, 0 ; виводимо число
+        je number_print_end
+        pop dx
+        add dx, '0'
+        mov ah, 02h
+        int 21h
+        dec cx
+        jmp print_post
+
+    number_print_end:
+        pop cx
+        mov dl, 10
+        mov ah, 02h
+        int 21h ; наступна строка
 
 @exit:
-mov ah,4ch
-mov al,[exCode]
-int 21h
+    mov ah,4ch
+    mov al,[exCode]
+    int 21h
 
 end Start
