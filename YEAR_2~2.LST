@@ -1,0 +1,77 @@
+Turbo Assembler	 Version 3.2	    01/17/22 22:52:17	    Page 1
+YEAR_2~2.ASM
+
+
+
+      1	0000			     STSEG SEGMENT PARA	STACK "STACK"
+      2	0000  40*(53 54	41 43 4B)    DB	64 DUP ( "STACK" )
+      3	0140			     STSEG ENDS
+      4	0000			     DSEG SEGMENT PARA PUBLIC "DATA"
+      5	0000  00		     exCode db 0
+      6	0001  20 24		     mybyte db " $"
+      7	0003  07 08*(??)	     input db 7, 8 dup(?)
+      8	000C  49 6E 63 6F 72 72	65+  error db "Incorrect number", 10, 13, "$"
+      9	      63 74 20 6E 75 6D	62+
+     10	      65 72 0A 0D 24
+     11	001F  4E 75 6D 62 65 72	20+  error_overflow db "Number overflow", 10, 13, "$"
+     12	      6F 76 65 72 66 6C	6F+
+     13	      77 0A 0D 24
+     14	0031			     DSEG ENDS
+     15	0000			     CSEG SEGMENT PARA PUBLIC "CODE"
+     16
+     17
+     18
+     19	0000			     MAIN PROC FAR
+     20				     ASSUME CS:	CSEG, DS: DSEG,	SS: STSEG
+     21				     ; адреса повернення
+     22	0000  1E		     PUSH DS
+     23	0001  B8 0000		     MOV AX, 0 ; або	XOR AX,	AX
+     24	0004  50		     PUSH AX
+     25				     ; ініціалізація DS
+     26	0005  B8 0000s		     MOV AX, DSEG
+     27	0008  8E D8		     MOV DS, AX
+     28
+     29	000A			     demo proc near
+     30
+     31				     end
+*Warning* YEAR_2~2.ASM(27) Open	procedure: DEMO
+*Warning* YEAR_2~2.ASM(27) Open	procedure: MAIN
+*Warning* YEAR_2~2.ASM(27) Open	segment: CSEG
+Turbo Assembler	 Version 3.2	    01/17/22 22:52:17	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "01/17/22"
+??FILENAME			  Text	 "YEAR_2~2"
+??TIME				  Text	 "22:52:17"
+??VERSION			  Number 0314
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CSEG
+@FILENAME			  Text	 YEAR_2~2
+@WORDSIZE			  Text	 2
+DEMO				  Near	 CSEG:000A
+ERROR				  Byte	 DSEG:000C
+ERROR_OVERFLOW			  Byte	 DSEG:001F
+EXCODE				  Byte	 DSEG:0000
+INPUT				  Byte	 DSEG:0003
+MAIN				  Far	 CSEG:0000
+MYBYTE				  Byte	 DSEG:0001
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CSEG				  16  000A Para	  Public  CODE
+DSEG				  16  0031 Para	  Public  DATA
+STSEG				  16  0140 Para	  Stack	  STACK
+Turbo Assembler	 Version 3.2	    01/17/22 22:52:17	    Page 3
+Error Summary
+
+
+
+*Warning* YEAR_2~2.ASM(27) Open	procedure: DEMO
+*Warning* YEAR_2~2.ASM(27) Open	procedure: MAIN
+*Warning* YEAR_2~2.ASM(27) Open	segment: CSEG
+

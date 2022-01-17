@@ -1,9 +1,9 @@
 
  Start  Stop   Length Name               Class
 
- 00000H 000CEH 000CFH _TEXT              CODE
- 000D0H 00100H 00031H _DATA              DATA
- 00110H 0020FH 00100H STACK              STACK
+ 00000H 0013FH 00140H STSEG              STACK
+ 00140H 00170H 00031H DSEG               DATA
+ 00180H 0025DH 000DEH CSEG               CODE
 
-Program entry point at 0000:0000
+Program entry point at 0018:0000
 

@@ -1,21 +1,95 @@
-IDEAL ; Директива - тип Асемблера tasm
-MODEL small ; Директива - тип моделі пам’яті
-STACK 256 ; Директива - розмір стеку
-
-DATASEG
+STSEG SEGMENT PARA STACK "STACK"
+DB 64 DUP ( "STACK" )
+STSEG ENDS
+DSEG SEGMENT PARA PUBLIC "DATA"
 exCode db 0
 mybyte db " $"
 input db 7, 8 dup(?)
 error db "Incorrect number", 10, 13, "$"
 error_overflow db "Number overflow", 10, 13, "$"
+DSEG ENDS
+CSEG SEGMENT PARA PUBLIC "CODE"
 
-CODESEG
-Start:
-;--------------------------------- 1. Ініціалізація DS и ES---------------------------------------
-mov ax,@data; @data ідентифікатор, що створюються директивою model
-mov ds, ax ; Завантаження початку сегменту даних в регістр ds
-mov es, ax ; Завантаження початку сегменту даних в регістр es
-;----------------------------------2. Операція виводу на консоль---------------------------------
+MAIN PROC FAR
+ASSUME CS: CSEG, DS: DSEG, SS: STSEG
+; адреса повернення
+PUSH DS
+MOV AX, 0 ; або XOR AX, AX
+PUSH AX
+; ініціалізація DS
+MOV AX, DSEG
+MOV DS, AX
+
+CALL ASK_FOR_NUMBER
+
+sub ax, 32
+jo print_overflow_2
+
+@print:
+    cmp ax, 0
+    jl print_minus
+    je print_zero
+    jge pre_print
+
+    print_zero: ; вивести 0
+        mov mybyte, '0'
+        lea dx, mybyte
+        mov ah, 09h
+        int 21h
+        jmp number_print_end
+
+    print_minus: ; вывести -
+        push ax
+        mov mybyte, '-'
+        lea dx, mybyte
+        mov ah, 09h
+        int 21h
+        pop ax
+        neg ax
+        mov cx,0
+        mov dx,0
+
+    pre_print:
+        cmp ax, 0
+        je print_post
+        mov bx, 10
+        div bx
+        push dx
+        inc cx
+        xor dx, dx
+        jmp pre_print
+
+    print_post:
+        cmp cx, 0 ; виводимо число
+        je number_print_end
+        pop dx
+        add dx, '0'
+        mov ah, 02h
+        int 21h
+        dec cx
+        jmp print_post
+
+    number_print_end:
+        pop cx
+        mov dl, 10
+        mov ah, 02h
+        int 21h ; наступна строка
+
+@exit:
+    mov ah,4ch
+    mov al,[exCode]
+    int 21h
+
+print_overflow_2:
+    lea dx, error_overflow
+    mov ah, 09h
+    int 21h
+    jmp @exit
+
+RET
+MAIN ENDP
+
+ASK_FOR_NUMBER PROC NEAR
 push si
 mov ah,0ah
 xor di,di
@@ -81,63 +155,8 @@ end_ask_for_number:
 mov bx, 0
 mov cx, 0
 mov dx, 0
+RET
+ASK_FOR_NUMBER ENDP
 
-sub ax, 32
-jo print_overflow
-
-@print:
-    cmp ax, 0
-    jl print_minus
-    je print_zero
-    jge pre_print
-
-    print_zero: ; вивести 0
-        mov mybyte, '0'
-        lea dx, mybyte
-        mov ah, 09h
-        int 21h
-        jmp number_print_end
-
-    print_minus: ; вывести -
-        push ax
-        mov mybyte, '-'
-        lea dx, mybyte
-        mov ah, 09h
-        int 21h
-        pop ax
-        neg ax
-        mov cx,0
-        mov dx,0
-
-    pre_print:
-        cmp ax, 0
-        je print_post
-        mov bx, 10
-        div bx
-        push dx
-        inc cx
-        xor dx, dx
-        jmp pre_print
-
-    print_post:
-        cmp cx, 0 ; виводимо число
-        je number_print_end
-        pop dx
-        add dx, '0'
-        mov ah, 02h
-        int 21h
-        dec cx
-        jmp print_post
-
-    number_print_end:
-        pop cx
-        mov dl, 10
-        mov ah, 02h
-        int 21h ; наступна строка
-
-@exit:
-    mov ah,4ch
-    mov al,[exCode]
-    int 21h
-
-end Start
+CSEG ENDS
+END MAIN
