@@ -29,7 +29,7 @@ error_overflow db "Number overflow", 10, 13, "$"
 CODESEG
 Start:
 ;--------------------------------- 1. Ініціалізація DS и ES---------------------------------------
-mov ax,data; data ідентифікатор, що створюються директивою model
+mov ax,@data; @data ідентифікатор, що створюються директивою model
 mov ds, ax ; Завантаження початку сегменту даних в регістр ds
 mov es, ax ; Завантаження початку сегменту даних в регістр es
 ;----------------------------------2. Операція виводу на консоль---------------------------------
@@ -84,13 +84,13 @@ print_error:   ; якщо була помилка, то виводимо пов�
     lea dx, error
     mov ah, 09h
     int 21h
-    jmp exit
+    jmp @exit
 
 print_overflow: ; якщо було переповнення - то виводимо повідомлення про це та виходимо
     lea dx, error_overflow
     mov ah, 09h
     int 21h
-    jmp exit
+    jmp @exit
 
 end_one:
     cmp di,1 ; якщо встановлено прапор, то
@@ -165,30 +165,30 @@ mov [y], ax ; Сохраняємо результат конвертації у 
 ; Основна частина завдання
 
 cmp x, 10  ; перевіряємо чи x більший за 10
-jg case_three_check_y
+jg @case_three_check_y
 
 cmp [x], 0; перевіряємо чи x дорівнюється 0
-jg case_one_check_y
-jl case_two_check_y
-je case_four
+jg @case_one_check_y
+jl @case_two_check_y
+je @case_four
 
-case_one_check_y:
+@case_one_check_y:
     cmp [y], 0 ; перевіряємо чи y дорівнюється 0
-    jg case_one
-    jng case_four
+    jg @case_one
+    jng @case_four
 
-case_two_check_y:
+@case_two_check_y:
     cmp [y], 0  ; перевіряємо чи y дорівнюється 0
-    jl case_two
-    jnl case_four
+    jl @case_two
+    jnl @case_four
 
-case_three_check_y:
+@case_three_check_y:
     cmp y, 0 ; перевіряємо чи y дорівнюється 0
-    je case_three
-    jne case_one_check_y
+    je @case_three
+    jne @case_one_check_y
 
 
-case_one: ; випадок 1 (x + y) (x / y)
+@case_one: ; випадок 1 (x + y) (x / y)
     mov dx, offset case_one
     mov ah, 9
     int 21h
@@ -202,10 +202,10 @@ case_one: ; випадок 1 (x + y) (x / y)
     div bx ; розділити на (x * y)
     mov z, ax ; сохранити результат
     mov zr, dx
-    jmp post_calculation
+    jmp @post_calculation
 
 
-case_two: ; випадок 2 (25y)
+@case_two: ; випадок 2 (25y)
     mov dx, offset case_two
     mov ah, 9
     int 21h
@@ -213,9 +213,9 @@ case_two: ; випадок 2 (25y)
     mov bx, 25
     mul bx ; 25y
     mov [z], ax ; сохранити результат
-    jmp post_calculation
+    jmp @post_calculation
 
-case_three: ; випадок 3 (6x)
+@case_three: ; випадок 3 (6x)
     mov dx, offset case_three
     mov ah, 9
     int 21h
@@ -223,33 +223,33 @@ case_three: ; випадок 3 (6x)
     mov bx, 6
     mul bx ; 6x
     mov [z], ax ; сохранити результат
-    jmp post_calculation
+    jmp @post_calculation
 
-case_four: ; випадок 4 (1)
+@case_four: ; випадок 4 (1)
     mov dx, offset case_four
     mov ah, 9
     int 21h
     mov z, 1
-    jmp post_calculation
+    jmp @post_calculation
 
-post_calculation:
+@post_calculation:
     mov ax, z
     mov cx, 0
     mov dx, 0
 
     cmp ax, 0
-    jl print_minus
-    je print_zero
-    jge pre_print
+    jl @print_minus
+    je @print_zero
+    jge @pre_print
 
-print_zero:  ; вивести 0
+@print_zero:  ; вивести 0
     mov [mybyte], 48
     lea dx, [mybyte]
     mov ah, 09
     int 21h
-    jmp check_floating_point
+    jmp @check_floating_point
 
-print_minus: ; вивести -
+@print_minus: ; вивести -
     mov [mybyte], 45
     lea dx, [mybyte]
     mov ah, 09
@@ -259,32 +259,32 @@ print_minus: ; вивести -
     mov cx,0
     mov dx,0
 
-pre_print:
+@pre_print:
     cmp ax,0
-    je print
+    je @print
     mov bx,10
     div bx
     push dx
     inc cx
     xor dx,dx
-    jmp pre_print
+    jmp @pre_print
 
-print:
+@print:
     cmp cx, 0
-    je check_floating_point ; якщо є залишок - треба його вивести після точки
+    je @check_floating_point ; якщо є залишок - треба його вивести після точки
     pop dx
     add dx,48
     mov ah,02h
     int 21h
     dec cx
-    jmp print
+    jmp @print
 
-check_floating_point:
+@check_floating_point:
     cmp zr, 0
-    je exit
-    jne print_floating_point
+    je @exit
+    jne @print_floating_point
 
-print_floating_point:
+@print_floating_point:
     mov [mybyte], 46
     lea dx, [mybyte]
     mov ah, 09
@@ -293,7 +293,7 @@ print_floating_point:
     mov dx, zr
     mov cx, 10 ; вивести тільки перші 10 цифр пілся точки максимум
 
-    floating:
+    @floating:
         mov ax, dx
         mov bx, 10
         mul bx
@@ -308,12 +308,12 @@ print_floating_point:
         int 21h
         pop dx
         cmp dx, 0
-        je exit
-        loop floating
+        je @exit
+        loop @floating
 
-    jmp exit
+    jmp @exit
 
-exit:
+@exit:
     mov ah,4ch
     mov al,[exCode]
     int 21h
